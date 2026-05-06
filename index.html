@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BCSO Roxwood — Générateur de rapport GTA RP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="wrap top">
+      <div class="badge"><div><small>ROXWOOD</small><b>★</b><small>SHERIFF</small></div></div>
+      <div style="flex:1">
+        <h1>Roxwood Sheriff's Office</h1>
+        <div class="subtitle">BCSO Mobile Data Terminal — <b>Rapport MED</b></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2 class="page-title">Rédaction de rapport</h2>
+    <div class="grid">
+      <section class="stack">
+        <div class="panel">
+          <div class="pad line">
+            <label class="form-label">Type d'incident</label>
+            <select id="incidentSelect" class="form-input">
+              <option value="">-- Sélectionner un type d'incident --</option>
+            </select>
+          </div>
+          <div id="formArea" class="hidden"></div>
+          <div id="emptyHint" class="hint">Sélectionne un type d'incident pour commencer.</div>
+        </div>
+
+        <div id="reportBlock" class="panel hidden">
+          <div class="section-title">▸ RAPPORT GÉNÉRÉ</div>
+          <div class="pad">
+            <div id="report" class="report"></div>
+            <div class="actions" style="margin-top:12px">
+              <button id="copyBtn" class="action">Copier le rapport</button>
+              <button id="sendBtn" class="action">Marquer comme envoyé</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
