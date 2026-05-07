@@ -60,6 +60,12 @@ function suspect(d) {
 function lieu(d) {
     return d.lieu || '[LIEU]';
 }
+function protocoleBraquage(d, label) {
+    if (d.antecedents_braquage === 'Inférieur ou égal à 2') {
+        return `Après vérification du casier, l'individu présente un nombre d'antécédents inférieur ou égal à 2 pour ${label}. Le dossier ne relève donc pas d'un rapport MED : il doit être traité en protocole et l'agent doit être redirigé vers la procédure classique.`;
+    }
+    return `Après vérification du casier, l'individu est en récidive pour ${label}. Le dossier relève donc d'un rapport MED.`;
+}
 // ─── COMMON PROCEDURE (Steps 5-14) ───────────────────────────────────
 export function generateProcedure(d) {
     const parts = [];
@@ -110,6 +116,8 @@ export function generateProcedure(d) {
         cellWait.push("d'un avocat");
     if (d.procureur_present === 'Oui')
         cellWait.push('du procureur');
+    else
+        cellWait.push("d'un membre de l'état-major");
     parts.push(`L'individu a ensuite été placé en cellule ${cellWait.length > 0 ? `dans l'attente ${cellWait.join(' et ')}` : 'pour rédaction de procédure'}.`);
     // 11. Avocat + Procureur
     if (d.demande_avocat === 'Oui' && d.nom_avocat) {
@@ -117,6 +125,9 @@ export function generateProcedure(d) {
     }
     if (d.procureur_present === 'Oui' && d.nom_procureur) {
         parts.push(`Le procureur ${d.nom_procureur} a été contacté et s'est présenté au poste pour statuer sur l'affaire.`);
+    }
+    else if (d.procureur_present === 'Non') {
+        parts.push(`Aucun procureur n'étant disponible, la situation a été remontée à ${d.nom_etat_major ? `un membre de l'état-major, ${d.nom_etat_major}` : "un membre de l'état-major"}, afin d'obtenir la conduite à tenir.`);
     }
     // 12. Décision
     const montant = d.montant_final || '0';
@@ -126,6 +137,9 @@ export function generateProcedure(d) {
     }
     else if (dt === 'procureur_seul' && d.nom_procureur) {
         parts.push(`Le procureur ${d.nom_procureur} a statué sur l'affaire et a fixé l'amende à $${montant}.`);
+    }
+    else if (dt === 'etat_major') {
+        parts.push(`${d.nom_etat_major ? d.nom_etat_major : "Le membre de l'état-major référent"} a validé la conduite à tenir et a fixé l'amende à $${montant}.`);
     }
     else if (dt === 'caution') {
         parts.push(`Une caution de $${montant} a été fixée pour la libération de l'individu.`);
@@ -182,6 +196,7 @@ export const INCIDENTS = {
         id: 'atm',
         label: 'Braquage ATM',
         defaultCharges: ['c32'],
+        medOnlyOnRecidive: true,
         contextFields: [
             { key: 'methode', label: 'Méthode utilisée', type: 'text', placeholder: 'Ex: pied de biche, camion bélier', half: true },
             { key: 'fuite_type', label: 'Tentative de fuite', type: 'select', options: ['Aucune fuite', 'À pied', 'En véhicule'], defaultValue: 'En véhicule', half: true },
@@ -210,6 +225,7 @@ export const INCIDENTS = {
         id: 'fleeca',
         label: 'Braquage Fleeca',
         defaultCharges: ['c34'],
+        medOnlyOnRecidive: true,
         contextFields: [
             { key: 'nb_braqueurs', label: 'Nombre de braqueurs', type: 'text', placeholder: 'Ex: 4', half: true },
             { key: 'nb_otages', label: "Nombre d'otages", type: 'text', placeholder: 'Ex: 4', half: true },
@@ -247,6 +263,7 @@ export const INCIDENTS = {
         id: 'superette',
         label: 'Braquage de supérette',
         defaultCharges: ['c33', 'c18'],
+        medOnlyOnRecidive: true,
         contextFields: [
             { key: 'commerce', label: 'Nom/type du commerce', type: 'text', placeholder: 'Ex: 24/7 de Sandy Shores', half: true },
             { key: 'arme_braq', label: 'Arme utilisée par le braqueur', type: 'text', placeholder: 'Ex: pistolet de combat', half: true },
@@ -609,6 +626,7 @@ export const INCIDENTS = {
         id: 'braquage_conteneur',
         label: 'Braquage de conteneur',
         defaultCharges: ['c50', 'c18'],
+        medOnlyOnRecidive: true,
         contextFields: [
             { key: 'lieu_conteneur', label: 'Localisation du conteneur', type: 'text', placeholder: 'Ex: port de Los Santos', half: true },
             { key: 'nb_suspects_cont', label: 'Nombre de suspects', type: 'text', placeholder: 'Ex: 3', half: true },

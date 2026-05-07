@@ -1,7 +1,7 @@
 import { INCIDENTS, INCIDENT_LIST, generateProcedure } from './data.js';
 
 const state = { incidentId: '', data: {} };
-const commonKeys = ['suspect','adam','unites','lieu','poste','miranda','demande_boire_manger','demande_avocat','demande_soins','fouille','nom_avocat','procureur_present','nom_procureur','decision_type','montant_final','libere','heure_sortie'];
+const commonKeys = ['suspect','adam','unites','lieu','antecedents_med','prison_deja','nb_peines_sursis','duree_sursis_annees','duree_sursis_mois','poste','miranda','demande_boire_manger','demande_avocat','demande_soins','fouille','nom_avocat','procureur_present','nom_procureur','nom_etat_major','decision_type','montant_final','libere','heure_sortie'];
 
 const $ = (id) => document.getElementById(id);
 const incidentSelect = $('incidentSelect');
@@ -26,6 +26,8 @@ function setIncident(id) {
     poste: data.poste || 'Roxwood', miranda: data.miranda || 'compris_acceptes',
     demande_boire_manger: data.demande_boire_manger || 'Oui', demande_avocat: data.demande_avocat || 'Non',
     demande_soins: data.demande_soins || 'Non', procureur_present: data.procureur_present || 'Oui',
+    antecedents_med: data.antecedents_med || 'Moins de 2',
+    prison_deja: data.prison_deja || 'Non',
     decision_type: data.decision_type || 'amende_directe', libere: data.libere || 'Oui'
   });
   incident.contextFields.forEach(f => { data[f.key] = old[f.key] || f.defaultValue || ''; });
@@ -67,6 +69,11 @@ function sectionsHTML(incident) {
     ${input('lieu',"Lieu de l'intervention",'Ex: Sandy Shores')}
   </div></div></details>
   <details open><summary class="section-title">▸ CONTEXTE DE L'INTERVENTION</summary><div class="pad line"><div class="fields">
+    ${select('antecedents_med','Antécédents MED de monsieur',['Moins de 2','Égal à 2','Plus de 2'])}
+    ${select('prison_deja','Monsieur a déjà fait de la prison ?',['Non','Oui'])}
+    ${state.data.prison_deja === 'Oui' ? input('nb_peines_sursis','Nombre de peines avec sursis','Ex: 2') : ''}
+    ${state.data.prison_deja === 'Oui' ? input('duree_sursis_annees','Durée totale du sursis - années','Ex: 1') : ''}
+    ${state.data.prison_deja === 'Oui' ? input('duree_sursis_mois','Durée totale du sursis - mois','Ex: 6') : ''}
     ${incident.contextFields.map(fieldHTML).join('')}
   </div></div></details>
   <details open><summary class="section-title">▸ PROCÉDURE AU POSTE</summary><div class="pad line"><div class="fields">
@@ -79,8 +86,8 @@ function sectionsHTML(incident) {
   </div></div></details>
   <details open><summary class="section-title">▸ DÉCISION JUDICIAIRE</summary><div class="pad"><div class="fields">
     ${state.data.demande_avocat === 'Oui' ? input('nom_avocat',"Nom de l'avocat",'Ex: Rodriguez') : ''}
-    ${select('procureur_present','Procureur présent',['Oui','Non'])}
-    ${state.data.procureur_present === 'Oui' ? input('nom_procureur','Nom du procureur','Ex: Williams') : ''}
+    ${select('procureur_present','Procureur disponible / présent',['Oui','Non'])}
+    ${state.data.procureur_present === 'Oui' ? input('nom_procureur','Nom du procureur','Ex: Williams') : input('nom_etat_major',"Membre de l'état-major référent",'Ex: Capitaine Martinez')}
     ${decisionSelect()}
     ${!['prison','bracelet'].includes(state.data.decision_type) ? input('montant_final','Montant amende / caution ($)','Ex: 45000') : ''}
     ${select('libere','Libéré',['Oui','Non','Bracelet'])}
@@ -98,6 +105,7 @@ function decisionSelect() {
   const opts = [['amende_directe','Amende directe'], ['caution','Caution'], ['bracelet','Bracelet électronique'], ['prison','Maintien en détention']];
   if (state.data.demande_avocat === 'Oui' && state.data.procureur_present === 'Oui') opts.splice(1,0,['accord','Accord procureur + avocat']);
   if (state.data.procureur_present === 'Oui') opts.splice(1,0,['procureur_seul','Décision procureur seul']);
+  if (state.data.procureur_present === 'Non') opts.splice(1,0,['etat_major','Décision état-major']);
   return selectObj('decision_type','Type de décision',Object.fromEntries(opts));
 }
 function bindInputs() {
@@ -110,8 +118,35 @@ function bindInputs() {
   });
 }
 
-function generatedDetails() { const incident = INCIDENTS[state.incidentId]; return (incident.generateContext(state.data) + '\n\n' + generateProcedure(state.data)).replace(/\n{3,}/g,'\n\n').trim(); }
-function fullReport() { const incident = INCIDENTS[state.incidentId]; if (!incident) return ''; return `NOM\n${state.data.suspect || '[Non renseigné]'}\n\nINCIDENT\n${incident.label}\n\nDÉTAILS\n${generatedDetails()}`; }
+function antecedentsText(incident) {
+  const valeur = state.data.antecedents_med || 'Moins de 2';
+  const nom = state.data.suspect || '[NOM]';
+  const parts = [];
+
+  if (valeur === 'Moins de 2') {
+    parts.push(`Après vérification du casier, les antécédents de monsieur ${nom} sont inférieurs à 2 pour ${incident.label}. Le dossier ne relève donc pas d'un rapport MED : il doit être traité en protocole et l'agent doit être redirigé vers la procédure classique.`);
+  } else if (valeur === 'Égal à 2') {
+    parts.push(`Après vérification du casier, les antécédents de monsieur ${nom} sont égaux à 2 pour ${incident.label}. Le dossier reste à traiter en protocole et l'agent doit être redirigé vers la procédure classique.`);
+  } else {
+    parts.push(`Après vérification du casier, les antécédents de monsieur ${nom} sont supérieurs à 2 pour ${incident.label}. Le dossier relève donc d'un rapport MED pour récidive.`);
+  }
+
+  if (state.data.prison_deja === 'Oui') {
+    const nb = state.data.nb_peines_sursis || '[NOMBRE]';
+    const annees = state.data.duree_sursis_annees || '0';
+    const mois = state.data.duree_sursis_mois || '0';
+    parts.push(`Il est également indiqué que monsieur ${nom} a déjà fait de la prison. Le casier mentionne ${nb} peine(s) avec sursis, pour une durée totale de ${annees} année(s) et ${mois} mois.`);
+  } else {
+    parts.push(`Aucun passage en prison n'est indiqué pour monsieur ${nom} dans les éléments renseignés.`);
+  }
+
+  return parts.join('\n\n');
+}
+function generatedDetails() { const incident = INCIDENTS[state.incidentId]; return (incident.generateContext(state.data) + '\n\n' + antecedentsText(incident) + '\n\n' + generateProcedure(state.data)).replace(/\n{3,}/g,'\n\n').trim(); }
+function reportType(incident) {
+  return state.data.antecedents_med === 'Plus de 2' ? 'RAPPORT MED' : 'PROTOCOLE';
+}
+function fullReport() { const incident = INCIDENTS[state.incidentId]; if (!incident) return ''; return `NOM\n${state.data.suspect || '[Non renseigné]'}\n\nTYPE\n${reportType(incident)}\n\nINCIDENT\n${incident.label}\n\nDÉTAILS\n${generatedDetails()}`; }
 async function copyReport() { await navigator.clipboard.writeText(fullReport()); toast('Rapport copié.'); }
 function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2000); }
 render();
