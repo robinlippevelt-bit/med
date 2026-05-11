@@ -86,7 +86,7 @@ header{
   box-shadow:0 12px 38px rgba(0,0,0,.22);
 }
 header:after{
-  content:"Projet Version 2  ✦";
+  content:"Projet Version 3  ✦";
   position:absolute;
   right:clamp(16px,4vw,48px);
   bottom:-16px;
@@ -115,29 +115,87 @@ header:before{
   animation:pulseRing 2.4s ease-in-out infinite;
 }
 
-.top{display:flex;align-items:center;gap:20px;padding:20px 0;animation:fadeUp .7s var(--ease) both}
-.badge{
-  width:78px;height:78px;border-radius:28px;
-  display:flex;align-items:center;justify-content:center;
-  background:
-    linear-gradient(145deg,rgba(51,227,131,.27),rgba(255,255,255,.07)),
-    radial-gradient(circle at 30% 20%,rgba(156,255,190,.35),transparent 48%);
-  border:1px solid var(--line-strong);
-  box-shadow:var(--shadow-green), inset 0 0 0 1px rgba(255,255,255,.07);
-  flex:0 0 auto;
+
+.top{
+  min-height:148px;
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr) 128px;
+  align-items:center;
+  gap:28px;
+  padding:22px 0 26px;
+  animation:fadeUp .7s var(--ease) both;
+}
+.brand-block{min-width:0}
+
+.bcso-star{
+  width:104px;
+  height:104px;
   position:relative;
-  overflow:hidden;
+  display:grid;
+  place-items:center;
+  color:#f1c65a;
+  filter:drop-shadow(0 0 16px rgba(212,169,67,.28));
 }
-.badge:after{
-  content:"";
+.bcso-star:before{
+  content:"✶";
   position:absolute;
-  inset:-45% 0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
-  animation:scan 4.8s ease-in-out infinite;
+  inset:-2px;
+  display:grid;
+  place-items:center;
+  font-size:112px;
+  line-height:1;
+  color:#d7b24d;
+  text-shadow:0 0 20px rgba(215,178,77,.18);
 }
-.badge div{text-align:center;line-height:1;position:relative;z-index:1}
-.badge small{display:block;color:var(--green-2);font-size:7px;font-weight:900;letter-spacing:1px}
-.badge b{display:block;color:#fff;font-size:30px;text-shadow:0 0 22px rgba(51,227,131,.92)}
+.bcso-star:after{
+  content:"";
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  border:3px solid #d7b24d;
+  background:linear-gradient(180deg,#12351f,#08150d);
+  box-shadow:inset 0 0 18px rgba(0,0,0,.52),0 0 0 2px rgba(215,178,77,.16);
+  z-index:1;
+}
+.star-core{
+  position:relative;
+  z-index:2;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.05em;
+  color:#f6d56a;
+}
+.star-text{
+  position:absolute;
+  z-index:2;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.12em;
+  color:#f7d978;
+}
+.top-text{top:35px}.bottom-text{bottom:34px}
+
+.bcso-shield{
+  justify-self:end;
+  width:96px;
+  height:120px;
+  padding:12px 10px 14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  text-align:center;
+  color:#f0c85a;
+  background:
+    radial-gradient(circle at 50% 34%,rgba(156,255,190,.18),transparent 31px),
+    linear-gradient(180deg,#173e25,#07140d);
+  border:3px solid #d2ad4f;
+  clip-path:polygon(50% 0,92% 13%,92% 58%,50% 100%,8% 58%,8% 13%);
+  box-shadow:0 0 24px rgba(212,169,67,.2), inset 0 0 18px rgba(0,0,0,.52);
+}
+.shield-title{font-size:24px;font-weight:900;letter-spacing:.06em;line-height:.9}
+.shield-mountains{font-size:29px;color:#e9f3bd;text-shadow:18px 8px 0 rgba(73,130,74,.8),-18px 9px 0 rgba(73,130,74,.8)}
+.shield-county{font-size:10px;font-weight:900;letter-spacing:.08em;line-height:1.05}
 
 h1{margin:0;color:#fff;font-size:clamp(24px,3.2vw,42px);letter-spacing:-.045em;font-weight:900;line-height:1.05}
 .subtitle{margin-top:8px;color:var(--muted);font-size:14px;font-weight:600}.subtitle b{color:var(--green-2)}
@@ -257,4 +315,110 @@ details summary::-webkit-details-marker{display:none}
 
 @media(prefers-reduced-motion:reduce){
   *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+
+
+.footer-credit{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  min-height:58px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:34vw;
+  padding:0 clamp(22px,5vw,70px);
+  border-top:1px solid rgba(156,255,190,.28);
+  background:linear-gradient(180deg,rgba(2,8,6,.26),rgba(2,10,7,.82));
+  backdrop-filter:blur(14px);
+  color:rgba(255,255,255,.86);
+  font-size:15px;
+  font-weight:700;
+  z-index:999;
+}
+.footer-credit strong{
+  color:var(--green-2);
+  font-weight:900;
+}
+.footer-left,.footer-right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  white-space:nowrap;
+}
+.mini-star{
+  color:#d7b24d;
+  font-size:27px;
+  filter:drop-shadow(0 0 8px rgba(215,178,77,.35));
+}
+.mini-shield{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  color:var(--green-2);
+  border:2px solid rgba(156,255,190,.78);
+  border-radius:9px 9px 13px 13px;
+  box-shadow:0 0 14px rgba(51,227,131,.18);
+}
+main.wrap{padding-bottom:88px}
+
+@media(max-width:760px){
+  .top{grid-template-columns:70px 1fr;gap:14px;min-height:auto}
+  .bcso-star{width:64px;height:64px}.bcso-star:before{font-size:70px}.bcso-star:after{width:34px;height:34px;border-width:2px}.star-core{font-size:9px}.star-text{font-size:4.5px}.top-text{top:22px}.bottom-text{bottom:21px}
+  .bcso-shield{display:none}
+  .footer-credit{position:static;gap:14px;flex-direction:column;padding:14px 16px;font-size:13px}
+}
+
+
+.bcso-logo-star{
+    width:120px;
+    height:auto;
+    object-fit:contain;
+    justify-self:start;
+    filter:
+      drop-shadow(0 0 12px rgba(255,215,0,.25))
+      drop-shadow(0 0 25px rgba(255,215,0,.12));
+}
+
+.bcso-logo-shield{
+    width:110px;
+    height:auto;
+    object-fit:contain;
+    justify-self:end;
+    filter:
+      drop-shadow(0 0 12px rgba(51,227,131,.22))
+      drop-shadow(0 0 24px rgba(51,227,131,.12));
+}
+
+.top{
+    min-height:160px;
+    display:grid;
+    grid-template-columns:140px 1fr 140px;
+    align-items:center;
+    gap:24px;
+}
+
+.brand-block{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+@media(max-width:760px){
+
+    .top{
+        grid-template-columns:80px 1fr;
+        gap:14px;
+    }
+
+    .bcso-logo-star{
+        width:72px;
+    }
+
+    .bcso-logo-shield{
+        display:none;
+    }
 }

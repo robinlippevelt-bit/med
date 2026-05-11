@@ -1,7 +1,7 @@
 import { INCIDENTS, INCIDENT_LIST, generateProcedure } from './data.js';
 
 const state = { incidentId: '', data: {} };
-const commonKeys = ['suspect','adam','unites','lieu','antecedents_med','prison_deja','nb_peines_sursis','duree_sursis_annees','duree_sursis_mois','poste','miranda','demande_boire_manger','demande_avocat','demande_soins','fouille','nom_avocat','procureur_present','nom_procureur','nom_etat_major','decision_type','montant_final','libere','heure_sortie'];
+const commonKeys = ['suspect','adam','unites','lieu','antecedents_med','issue_controle','poste','miranda','demande_boire_manger','demande_avocat','demande_soins','fouille','nom_avocat','procureur_present','nom_procureur','nom_etat_major','decision_type','montant_final','libere','heure_sortie'];
 
 const $ = (id) => document.getElementById(id);
 const incidentSelect = $('incidentSelect');
@@ -23,11 +23,11 @@ function setIncident(id) {
   const data = {};
   commonKeys.forEach(k => { if (old[k]) data[k] = old[k]; });
   Object.assign(data, {
+    issue_controle: data.issue_controle || 'interpellation',
     poste: data.poste || 'Roxwood', miranda: data.miranda || 'compris_acceptes',
     demande_boire_manger: data.demande_boire_manger || 'Oui', demande_avocat: data.demande_avocat || 'Non',
     demande_soins: data.demande_soins || 'Non', procureur_present: data.procureur_present || 'Oui',
     antecedents_med: data.antecedents_med || 'Moins de 2',
-    prison_deja: data.prison_deja || 'Non',
     decision_type: data.decision_type || 'amende_directe', libere: data.libere || 'Oui'
   });
   incident.contextFields.forEach(f => { data[f.key] = old[f.key] || f.defaultValue || ''; });
@@ -69,22 +69,18 @@ function sectionsHTML(incident) {
     ${input('lieu',"Lieu de l'intervention",'Ex: Sandy Shores')}
   </div></div></details>
   <details open><summary class="section-title">▸ CONTEXTE DE L'INTERVENTION</summary><div class="pad line"><div class="fields">
-    ${select('antecedents_med','Antécédents MED de monsieur',['Moins de 2','Égal à 2','Plus de 2'])}
-    ${select('prison_deja','Monsieur a déjà fait de la prison ?',['Non','Oui'])}
-    ${state.data.prison_deja === 'Oui' ? input('nb_peines_sursis','Nombre de peines avec sursis','Ex: 2') : ''}
-    ${state.data.prison_deja === 'Oui' ? input('duree_sursis_annees','Durée totale du sursis - années','Ex: 1') : ''}
-    ${state.data.prison_deja === 'Oui' ? input('duree_sursis_mois','Durée totale du sursis - mois','Ex: 6') : ''}
     ${incident.contextFields.map(fieldHTML).join('')}
   </div></div></details>
-  <details open><summary class="section-title">▸ PROCÉDURE AU POSTE</summary><div class="pad line"><div class="fields">
-    ${select('poste','Poste de police',['Roxwood','Sandy Shores','Paleto Bay','Davis','Mission Row'])}
-    ${selectObj('miranda','Droits Miranda',{compris_acceptes:'Compris et acceptés',compris_pas_utiliser:"Compris, n'a pas utilisé ses droits",compris_silence:'Compris, garde le silence',non_lus:'Non lus (urgence vitale)'})}
-    ${select('demande_boire_manger','Demande boire/manger',['Oui','Non'])}
-    ${select('demande_avocat','Demande avocat',['Oui','Non'])}
-    ${select('demande_soins','Demande soins médicaux',['Oui','Non'])}
-    ${textarea('fouille','Objets saisis lors de la fouille (un par ligne)',"Ex:\nX24 Pochon de cocaine\nX25 Pochon de Weed\nX9210 Argent Non tracé",4,'span2')}
+  <details open><summary class="section-title">▸ ISSUE DU CONTRÔLE / PROCÉDURE</summary><div class="pad line"><div class="fields">
+    ${selectObj('issue_controle','Issue après palpation',{interpellation:'Interpellation + transport au poste',controle_simple:'Contrôle simple — relâché sur place'},'span2')}
+    ${state.data.issue_controle !== 'controle_simple' ? select('poste','Poste de police',['Roxwood','Sandy Shores','Paleto Bay','Davis','Mission Row']) : ''}
+    ${state.data.issue_controle !== 'controle_simple' ? selectObj('miranda','Droits Miranda',{compris_acceptes:'Compris et acceptés',compris_pas_utiliser:"Compris, n'a pas utilisé ses droits",compris_silence:'Compris, garde le silence',non_lus:'Non lus (urgence vitale)'}) : ''}
+    ${state.data.issue_controle !== 'controle_simple' ? select('demande_boire_manger','Demande boire/manger',['Oui','Non']) : ''}
+    ${state.data.issue_controle !== 'controle_simple' ? select('demande_avocat','Demande avocat',['Oui','Non']) : ''}
+    ${state.data.issue_controle !== 'controle_simple' ? select('demande_soins','Demande soins médicaux',['Oui','Non']) : ''}
+    ${state.data.issue_controle !== 'controle_simple' ? textarea('fouille','Objets saisis lors de la fouille complète au poste (un par ligne)',"Ex:\nX24 Pochon de cocaine\nX25 Pochon de Weed\nX9210 Argent Non tracé",4,'span2') : ''}
   </div></div></details>
-  <details open><summary class="section-title">▸ DÉCISION JUDICIAIRE</summary><div class="pad"><div class="fields">
+  ${state.data.issue_controle !== 'controle_simple' ? `<details open><summary class="section-title">▸ DÉCISION JUDICIAIRE</summary><div class="pad"><div class="fields">
     ${state.data.demande_avocat === 'Oui' ? input('nom_avocat',"Nom de l'avocat",'Ex: Rodriguez') : ''}
     ${select('procureur_present','Procureur disponible / présent',['Oui','Non'])}
     ${state.data.procureur_present === 'Oui' ? input('nom_procureur','Nom du procureur','Ex: Williams') : input('nom_etat_major',"Membre de l'état-major référent",'Ex: Capitaine Martinez')}
@@ -92,7 +88,7 @@ function sectionsHTML(incident) {
     ${!['prison','bracelet'].includes(state.data.decision_type) ? input('montant_final','Montant amende / caution ($)','Ex: 45000') : ''}
     ${select('libere','Libéré',['Oui','Non','Bracelet'])}
     ${input('heure_sortie','Heure de sortie','Ex: 22h45')}
-  </div></div></details>`;
+  </div></div></details>` : ''}`;
 }
 
 function esc(v='') { return String(v).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -131,14 +127,6 @@ function antecedentsText(incident) {
     parts.push(`Après vérification du casier, les antécédents de monsieur ${nom} sont supérieurs à 2 pour ${incident.label}. Le dossier relève donc d'un rapport MED pour récidive.`);
   }
 
-  if (state.data.prison_deja === 'Oui') {
-    const nb = state.data.nb_peines_sursis || '[NOMBRE]';
-    const annees = state.data.duree_sursis_annees || '0';
-    const mois = state.data.duree_sursis_mois || '0';
-    parts.push(`Il est également indiqué que monsieur ${nom} a déjà fait de la prison. Le casier mentionne ${nb} peine(s) avec sursis, pour une durée totale de ${annees} année(s) et ${mois} mois.`);
-  } else {
-    parts.push(`Aucun passage en prison n'est indiqué pour monsieur ${nom} dans les éléments renseignés.`);
-  }
 
   return parts.join('\n\n');
 }

@@ -70,8 +70,15 @@ function protocoleBraquage(d, label) {
 export function generateProcedure(d) {
     const parts = [];
     const poste = d.poste || 'Mission Row';
+
+    if (d.issue_controle === 'controle_simple') {
+        parts.push(`Une palpation de sécurité a été effectuée sur l'individu afin de vérifier qu'il ne possède aucun objet dangereux ou arme immédiatement accessible.`);
+        parts.push(`Aucun élément nécessitant une interpellation ou un transport au poste n'a été constaté.`);
+        parts.push(`L'individu a ensuite été autorisé à quitter les lieux.`);
+        return parts.join('\n\n');
+    }
     // 5. Transport
-    parts.push(`L'individu a été menotté et placé à l'arrière du véhicule de service, puis conduit au poste de ${poste} pour la suite de la procédure.`);
+    parts.push(`Au vu des faits constatés, l'individu a été placé en état d'interpellation. Il a été menotté, placé à l'arrière du véhicule de service, puis conduit au poste de ${poste} pour la suite de la procédure.`);
     // 6. Miranda
     const mirandaOpt = d.miranda || 'compris_acceptes';
     if (mirandaOpt === 'compris_acceptes') {
